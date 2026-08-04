@@ -1,0 +1,57 @@
+# ==============================================================================
+# Deploy: ASECPS Prototype -> GitHub Pages
+#
+# Academic Staff Engagement & Claims Processing System (ASECPS)
+# University of Lay Adventists of Kigali (UNILAK)
+#
+# This workflow publishes the static prototype (index.html) to GitHub Pages
+# every time changes are pushed to the main branch. No build step is required
+# since the prototype is a single self-contained HTML/CSS/JS file.
+# ==============================================================================
+
+name: Deploy to GitHub Pages
+
+on:
+  # Redeploy automatically whenever main is updated
+  push:
+    branches: [main]
+
+  # Allow manual redeploys from the Actions tab without needing a new commit
+  workflow_dispatch:
+
+# Grant the minimum permissions this workflow actually needs
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Prevent overlapping deployments; let the newest push win
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Prepare site artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Upload site as Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Root of the repo is deployed as-is (static site, no build step)
+          path: .
+
+  deploy:
+    name: Publish to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
