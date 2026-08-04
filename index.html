@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNILAK · Staff Engagement & Claims</title>
+  <!-- Font Awesome 6 (free) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #0f2b4a;
+      --primary-light: #1a3f64;
+      --accent: #2a7f5e;
+      --accent-light: #e1f0e8;
+      --bg: #f0f4fa;
+      --card: #ffffff;
+      --border: #dce4ed;
+      --text: #1a2634;
+      --text-muted: #4d6278;
+      --radius: 16px;
+      --shadow: 0 12px 30px -10px rgba(0,20,40,0.12);
+      --transition: 0.2s ease;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    /* layout */
+    .app { display: flex; flex-direction: column; min-height: 100vh; }
+    /* header */
+    .app-header {
+      background: var(--primary);
+      color: white;
+      padding: 0.9rem 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid var(--accent);
+    }
+    .app-header .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+    .app-header .brand i { color: #7bc9a0; font-size: 1.4rem; }
+    .app-header .role-selector {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 0.9rem;
+    }
+    .app-header select {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      padding: 0.3rem 1.2rem 0.3rem 0.8rem;
+      border-radius: 40px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.6rem center;
+      padding-right: 2rem;
+    }
+    .app-header select option { background: var(--primary-light); color: white; }
+    .app-header .user-badge {
+      background: rgba(255,255,255,0.1);
+      padding: 0.2rem 1rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .app-body {
+      display: flex;
+      flex: 1;
+    }
+    /* sidebar */
+    .sidebar {
+      width: 230px;
+      background: white;
+      border-right: 1px solid var(--border);
+      padding: 1.2rem 0;
+      flex-shrink: 0;
+      height: 100%;
+      min-height: calc(100vh - 70px);
+    }
+    .sidebar button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 0.7rem 1.8rem;
+      background: transparent;
+      border: none;
+      font-size: 0.9rem;
+      color: var(--text);
+      cursor: pointer;
+      transition: var(--transition);
+      border-left: 3px solid transparent;
+      font-weight: 500;
+    }
+    .sidebar button i { width: 1.6rem; color: var(--text-muted); }
+    .sidebar button:hover { background: var(--bg); }
+    .sidebar button.active {
+      background: var(--accent-light);
+      border-left-color: var(--accent);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .sidebar button.active i { color: var(--accent); }
+    /* main */
+    .main {
+      flex: 1;
+      padding: 1.8rem 2rem 2rem;
+      overflow-x: auto;
+    }
+    /* cards & stats */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: white;
+      padding: 1rem 1.2rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .stat-card .number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1.2;
+    }
+    .stat-card .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--text-muted);
+    }
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .card h3 { font-size: 1rem; margin-bottom: 0.6rem; color: var(--primary); }
+    .card h3 i { color: var(--accent); margin-right: 0.4rem; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.8rem;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+    .badge-ft { background: #dbeafe; color: #1a4b7a; }
+    .badge-pt { background: #ede1fa; color: #5a2b91; }
+    .badge-converted { background: #fef1d6; color: #8e6200; }
+    .badge-pending { background: #fff3cd; color: #856404; }
+    .badge-signed { background: #d4edda; color: #0b5e2e; }
+    .badge-approved { background: #d4edda; color: #0b5e2e; }
+    .badge-paid { background: #c3e6cb; color: #155724; }
+    .badge-rejected { background: #f8d7da; color: #721c24; }
+
+    .table-wrap { overflow-x: auto; margin-top: 0.5rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      padding: 0.6rem 0.8rem;
+      text-align: left;
+    }
+    td { padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:hover td { background: #f8fafc; }
+
+    .signature-icons { display: flex; gap: 0.6rem; flex-wrap: wrap; font-size: 0.75rem; }
+    .signature-icons span { display: flex; align-items: center; gap: 0.2rem; }
+
+    .action-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.25rem 1rem;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .action-btn:hover { background: #1d6a4d; }
+    .action-btn.outline {
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+    }
+    .action-btn.outline:hover { background: var(--accent); color: white; }
+
+    .qr-sim {
+      display: inline-block;
+      width: 48px;
+      height: 48px;
+      background: repeating-linear-gradient(0deg, #0f2b4a 0 3px, #fff 3px 6px),
+                  repeating-linear-gradient(90deg, #0f2b4a 0 3px, #fff 3px 6px);
+      background-blend-mode: multiply;
+      border: 3px solid #0f2b4a;
+      border-radius: 6px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--primary);
+      color: white;
+      padding: 0.7rem 1.6rem;
+      border-radius: 60px;
+      font-size: 0.9rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-grid .full { grid-column: 1 / -1; }
+    label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.2rem; }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.45rem 0.8rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      background: white;
+    }
+    textarea { resize: vertical; min-height: 60px; }
+
+    .muted { color: var(--text-muted); font-size: 0.8rem; }
+    .flex { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+    .gap-1 { gap: 1rem; }
+
+    @media (max-width: 768px) {
+      .app-body { flex-direction: column; }
+      .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); min-height: auto; padding: 0.5rem 0; }
+      .sidebar button { padding: 0.5rem 1.2rem; }
+      .app-header { padding: 0.6rem 1rem; }
+      .main { padding: 1.2rem; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <!-- header -->
+  <header class="app-header">
+    <div class="brand">
+      <i class="fas fa-university"></i>
+      <span>UNILAK · Staff Engagement</span>
+      <span style="font-weight:400;font-size:0.75rem;opacity:0.7;margin-left:0.3rem;">Claims & Contracts</span>
+    </div>
+    <div class="role-selector">
+      <span style="opacity:0.7;">View as</span>
+      <select id="roleSelect"></select>
+      <select id="userSelect"></select>
+      <span class="user-badge"><i class="fas fa-user-circle"></i> <span id="userNameDisplay">Lecturer</span></span>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <nav class="sidebar" id="sidebarNav"></nav>
+    <main class="main" id="mainContent"></main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------------------------------------------------------
+   IN-MEMORY DATA LAYER
+---------------------------------------------------------------- */
+const DB = {
+  lecturers: {},
+  contracts: {},
+  claims: {},
+  applications: {},
+};
+
+// seed helpers
+const FIRST = ["Jean","Marie","Eric","Claudine","Emmanuel","Alice","Patrick","Diane","Vincent","Josiane",
+  "Olivier","Solange","Innocent","Chantal","Fabrice","Yvonne","Damien","Grace","Alain","Immaculee",
+  "Theogene","Beatrice","Celestin","Odette","Bosco","Aline","Egide","Vestine","Ildephonse","Consolee"];
+const LAST = ["Uwase","Mugisha","Iradukunda","Niyonzima","Habimana","Mukamana","Ndayisenga","Ingabire",
+  "Nkurunziza","Uwimana","Byiringiro","Nzeyimana","Mukashema","Rugamba","Kayitesi","Twagirayezu",
+  "Nsengiyumva","Umutoni","Bizimana","Gasana","Mutesi","Sibomana","Uwizeyimana","Nyirahabimana"];
+const DEPTS = ["Computer Science","Business","Law","Theology","Education","Nursing","Economics"];
+const RANKS = ["Assistant Lecturer","Lecturer","Senior Lecturer","Associate Professor"];
+const FT_CAP = 200;
+
+// generate 70 lecturers
+(function seed() {
+  for (let i = 1; i <= 70; i++) {
+    const id = "L" + String(i).padStart(3, "0");
+    const isFT = i <= 35;
+    const f = FIRST[i % FIRST.length];
+    const l = LAST[(i * 3) % LAST.length];
+    const dept = DEPTS[i % DEPTS.length];
+    const rank = RANKS[i % RANKS.length];
+    const hours = isFT ? Math.floor((i * 29) % 280) : Math.floor((i * 11) % 70);
+    DB.lecturers[id] = {
+      id, name: f + " " + l, department: dept, rank,
+      baseType: isFT ? "Full-Time" : "Part-Time",
+      hoursCompleted: hours,
+      annualCap: isFT ? FT_CAP : null,
+      documents: ["Gov ID", "CV", "Application Letter", "Qualification", isFT ? "BRD Loan Form" : null].filter(Boolean),
+    };
+  }
+})();
+
+// seed contracts & claims
+(function seedContracts() {
+  let cid = 1, clid = 1;
+  const lects = Object.values(DB.lecturers);
+  for (let i = 0; i < 22; i++) {
+    const l = lects[i % lects.length];
+    const c = "C" + String(cid++).padStart(3, "0");
+    const status = i % 4 === 0 ? "Pending Signatures" : "Fully Executed";
+    DB.contracts[c] = {
+      id: c,
+      lecturerId: l.id,
+      course: l.department + " — Module " + ((i % 4) + 1),
+      hours: [30, 45, 60][i % 3],
+      status,
+      signatures: { lecturer: i % 3 !== 0, admin: i % 2 === 0, management: i % 4 === 0 }
+    };
+    if (i % 2 === 0) {
+      const cl = "CL" + String(clid++).padStart(3, "0");
+      DB.claims[cl] = {
+        id: cl,
+        lecturerId: l.id,
+        contractId: c,
+        letterAttached: true,
+        misAttendance: true,
+        signBookAttendance: i % 3 !== 0,
+        marks: true,
+        status: i % 5 === 0 ? "Paid" : (i % 3 === 0 ? "Pending Documents" : "Awaiting Sign-off"),
+        signatures: { admin: i % 3 !== 0, management: i % 5 === 0 }
+      };
+    }
+  }
+})();
+
+/* ---------------------------------------------------------------
+   SESSION & ROLE STATE
+---------------------------------------------------------------- */
+const ROLES = ["Lecturer", "Admin (HOD/Dean)", "Secondary User", "Management"];
+let session = { role: "Lecturer", userId: "L001" };
+
+/* ---------------------------------------------------------------
+   UI HELPERS
+---------------------------------------------------------------- */
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function statusBadge(status) {
+  const map = {
+    "Full-Time": "badge-ft",
+    "Part-Time": "badge-pt",
+    "Part-Time (converted)": "badge-converted",
+    "Pending Signatures": "badge-pending",
+    "Fully Executed": "badge-signed",
+    "Pending Documents": "badge-pending",
+    "Awaiting Sign-off": "badge-pending",
+    "Paid": "badge-paid",
+    "Approved": "badge-approved",
+    "Rejected": "badge-rejected"
+  };
+  return `<span class="badge ${map[status] || ''}">${status}</span>`;
+}
+
+function effectiveStatus(lect) {
+  if (lect.baseType === "Full-Time" && lect.hoursCompleted >= lect.annualCap) return "Part-Time (converted)";
+  return lect.baseType;
+}
+
+function canSignContract(c) {
+  if (session.role === "Lecturer") return session.userId === c.lecturerId && !c.signatures.lecturer;
+  if (session.role === "Admin (HOD/Dean)") return !c.signatures.admin;
+  if (session.role === "Management") return c.signatures.lecturer && c.signatures.admin && !c.signatures.management;
+  return false;
+}
+
+function canSignClaim(c) {
+  if (session.role === "Admin (HOD/Dean)") return !c.signatures.admin;
+  if (session.role === "Management") return c.signatures.admin && !c.signatures.management;
+  return false;
+}
+
+/* ---------------------------------------------------------------
+   RENDERERS
+---------------------------------------------------------------- */
+function renderContractTable(rows, withActions) {
+  if (!rows.length) return `<p class="muted">No contracts found.</p>`;
+  let html = `<div class="table-wrap"><table><thead><tr>
+    <th>ID</th><th>Lecturer</th><th>Course</th><th>Hours</th><th>QR</th><th>Status</th><th>Signatures</th>${withActions ? '<th>Action</th>' : ''}
+  </tr></thead><tbody>`;
+  rows.forEach(c => {
+    const lect = DB.lecturers[c.lecturerId] || { name: '?' };
+    html += `<tr>
+      <td><strong>${c.id}</strong></td>
+      <td>${lect.name}</td>
+      <td>${c.course}</td>
+      <td>${c.hours}h</td>
+      <td><div class="qr-sim" title="QR for ${c.id}"></div></td>
+      <td>${statusBadge(c.status)}</td>
+      <td><div class="signature-icons">
+        <span>${c.signatures.lecturer ? '✅' : '⏳'} Lect</span>
+        <span>${c.signatures.admin ? '✅' : '⏳'} Admin</span>
+        <span>${c.signatures.management ? '✅' : '⏳'} Mgmt</span>
+      </div></td>
+      ${withActions ? `<td>${canSignContract(c) ? `<button class="action-btn" data-sign-contract="${c.id}">Sign</button>` : '—'}</td>` : ''}
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function renderClaimTable(rows, withActions) {
+  if (!rows.length) return `<p class="muted">No claims found.</p>`;
+  let html = `<div class="table-wrap"><table><thead><tr>
+    <th>ID</th><th>Lecturer</th><th>Contract</th><th>Docs</th><th>Status</th><th>Signatures</th>${withActions ? '<th>Action</th>' : ''}
+  </tr></thead><tbody>`;
+  rows.forEach(c => {
+    const lect = DB.lecturers[c.lecturerId] || { name: '?' };
+    const docsOk = c.letterAttached && c.misAttendance && c.signBookAttendance && c.marks;
+    html += `<tr>
+      <td><strong>${c.id}</strong></td>
+      <td>${lect.name}</td>
+      <td>${c.contractId}</td>
+      <td>${docsOk ? '✅ Complete' : '⚠️ Missing'}</td>
+      <td>${statusBadge(c.status)}</td>
+      <td><div class="signature-icons">
+        <span>${c.signatures.admin ? '✅' : '⏳'} Admin</span>
+        <span>${c.signatures.management ? '✅' : '⏳'} Mgmt</span>
+      </div></td>
+      ${withActions ? `<td>${canSignClaim(c) ? `<button class="action-btn" data-sign-claim="${c.id}">Sign</button>` : '—'}</td>` : ''}
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+/* ---------------------------------------------------------------
+   VIEW DEFINITIONS
+---------------------------------------------------------------- */
+const VIEWS = {
+  "Lecturer": {},
+  "Admin (HOD/Dean)": {},
+  "Secondary User": {},
+  "Management": {}
+};
+
+// ---- Lecturer ----
+VIEWS["Lecturer"].dashboard = (el) => {
+  const lect = DB.lecturers[session.userId];
+  if (!lect) { el.innerHTML = '<p>Lecturer not found.</p>'; return; }
+  const pct = lect.annualCap ? Math.min(100, Math.round(lect.hoursCompleted / lect.annualCap * 100)) : null;
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
+      <h2 style="color:var(--primary);">Welcome, ${lect.name}</h2>
+      <span class="badge ${lect.baseType === 'Full-Time' ? 'badge-ft' : 'badge-pt'}">${effectiveStatus(lect)}</span>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="number">${lect.hoursCompleted}</div><div class="label">Hours completed</div></div>
+      <div class="stat-card"><div class="number">${lect.rank}</div><div class="label">Rank</div></div>
+      <div class="stat-card"><div class="number">${lect.department}</div><div class="label">Department</div></div>
+    </div>
+    <div class="card">
+      <h3><i class="fas fa-hourglass-half"></i> Hour cap progress</h3>
+      ${lect.annualCap ? `
+        <div style="background:#e5e9f0;border-radius:20px;height:8px;width:100%;max-width:400px;margin:0.3rem 0;">
+          <div style="background:var(--accent);height:8px;border-radius:20px;width:${pct}%;"></div>
+        </div>
+        <span class="muted">${lect.hoursCompleted} / ${lect.annualCap} hrs (${pct}%)</span>
+        ${lect.hoursCompleted >= lect.annualCap ? '<p class="muted" style="margin-top:0.3rem;">⚠️ Cap reached — additional courses paid at part‑time rate.</p>' : ''}
+      ` : `<span class="muted">Part‑time lecturers not subject to annual cap.</span>`}
+    </div>
+    <div class="card">
+      <h3><i class="fas fa-folder-open"></i> Documents on file</h3>
+      <ul style="display:flex;flex-wrap:wrap;gap:0.3rem 1rem;list-style:none;padding:0;">
+        ${lect.documents.map(d => `<li style="background:var(--accent-light);padding:0.1rem 0.8rem;border-radius:30px;font-size:0.8rem;">${d}</li>`).join('')}
+      </ul>
+    </div>
+  `;
+};
+
+VIEWS["Lecturer"].apply = (el) => {
+  const lect = DB.lecturers[session.userId];
+  el.innerHTML = `
+    <h2>New Application</h2>
+    <div class="card">
+      <form id="appForm">
+        <div class="form-grid">
+          <div><label>Full name</label><input value="${lect.name}" required></div>
+          <div><label>Department</label><select>${DEPTS.map(d => `<option ${d===lect.department?'selected':''}>${d}</option>`).join('')}</select></div>
+          <div><label>Government ID</label><input type="file"></div>
+          <div><label>CV</label><input type="file"></div>
+          <div><label>Qualification certificates</label><input type="file"></div>
+          <div><label>BRD Loan Form (if applicable)</label><input type="file"></div>
+          <div class="full"><label>Application letter</label><textarea rows="2" placeholder="Brief statement..."></textarea></div>
+        </div>
+        <button class="action-btn" type="submit" style="margin-top:0.5rem;">Submit Application</button>
+      </form>
+    </div>
+  `;
+  document.getElementById('appForm').onsubmit = (e) => {
+    e.preventDefault();
+    const id = 'APP' + String(Object.keys(DB.applications).length + 1).padStart(3, '0');
+    DB.applications[id] = { id, lecturerId: session.userId, status: 'Submitted' };
+    toast('Application ' + id + ' submitted.');
+    route('dashboard');
+  };
+};
+
+VIEWS["Lecturer"].contracts = (el) => {
+  const rows = Object.values(DB.contracts).filter(c => c.lecturerId === session.userId);
+  el.innerHTML = `<h2>My Contracts</h2>${renderContractTable(rows, true)}`;
+  attachContractActions(el);
+};
+VIEWS["Lecturer"].attendance = (el) => {
+  const lect = DB.lecturers[session.userId];
+  el.innerHTML = `
+    <h2>My Hours</h2>
+    <div class="card">
+      <p>Attendance is normally synced automatically from the MIS.</p>
+      <div class="flex"><span>Current total: <strong>${lect.hoursCompleted} hrs</strong></span> ${statusBadge(effectiveStatus(lect))}</div>
+      <button class="action-btn" id="syncBtn" style="margin-top:0.6rem;"><i class="fas fa-sync-alt"></i> Simulate MIS sync</button>
+    </div>
+  `;
+  document.getElementById('syncBtn').onclick = () => {
+    lect.hoursCompleted += Math.floor(Math.random() * 12) + 4;
+    toast('MIS sync complete.');
+    route('attendance');
+  };
+};
+VIEWS["Lecturer"].claims = (el) => {
+  const rows = Object.values(DB.claims).filter(c => c.lecturerId === session.userId);
+  const contracts = Object.values(DB.contracts).filter(c => c.lecturerId === session.userId);
+  el.innerHTML = `
+    <h2>Payment Claims</h2>
+    <div class="card">
+      <h3><i class="fas fa-plus-circle"></i> Submit new claim</h3>
+      <form id="claimForm">
+        <div style="margin-bottom:0.6rem;"><label>Contract</label>
+          <select id="claimContract">${contracts.map(c => `<option value="${c.id}">${c.id} — ${c.course}</option>`).join('') || '<option disabled>No contracts</option>'}</select>
+        </div>
+        <div class="form-grid">
+          <div><label>Letter</label><input type="file"></div>
+          <div><label>Sign‑book attendance</label><input type="file"></div>
+          <div class="full"><label>Marks (if not in MIS)</label><input type="file"></div>
+        </div>
+        <button class="action-btn" type="submit">Submit Claim</button>
+      </form>
+    </div>
+    ${rows.length ? renderClaimTable(rows, false) : '<p class="muted">No claims yet.</p>'}
+  `;
+  document.getElementById('claimForm').onsubmit = (e) => {
+    e.preventDefault();
+    const cid = document.getElementById('claimContract').value;
+    if (!cid) { toast('Select a contract.'); return; }
+    const id = 'CL' + String(Object.keys(DB.claims).length + 1).padStart(3, '0');
+    DB.claims[id] = { id, lecturerId: session.userId, contractId: cid, letterAttached: true, misAttendance: true, signBookAttendance: true, marks: true, status: 'Awaiting Sign-off', signatures: { admin: false, management: false } };
+    toast('Claim ' + id + ' submitted.');
+    route('claims');
+  };
+};
+
+// ---- Admin ----
+VIEWS["Admin (HOD/Dean)"].dashboard = (el) => {
+  const pendingApps = Object.values(DB.applications).filter(a => a.status === 'Submitted').length;
+  const pendingClaims = Object.values(DB.claims).filter(c => !c.signatures.admin).length;
+  const converted = Object.values(DB.lecturers).filter(l => l.baseType === 'Full-Time' && l.hoursCompleted >= l.annualCap).length;
+  el.innerHTML = `
+    <h2>Department Overview</h2>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="number">${Object.keys(DB.lecturers).length}</div><div class="label">Total lecturers</div></div>
+      <div class="stat-card"><div class="number">${pendingApps}</div><div class="label">Applications pending</div></div>
+      <div class="stat-card"><div class="number">${pendingClaims}</div><div class="label">Claims pending review</div></div>
+      <div class="stat-card"><div class="number">${converted}</div><div class="label">FT → PT converted</div></div>
+    </div>
+  `;
+};
+VIEWS["Admin (HOD/Dean)"].applications = (el) => {
+  const rows = Object.values(DB.applications);
+  el.innerHTML = `<h2>Applications</h2>
+    <div class="table-wrap"><table><tr><th>ID</th><th>Lecturer</th><th>Status</th><th>Action</th></tr>
+    ${rows.map(a => `<tr><td>${a.id}</td><td>${DB.lecturers[a.lecturerId]?.name || '?'}</td><td>${statusBadge(a.status)}</td>
+      <td>${a.status === 'Submitted' ? `<button class="action-btn" data-app="${a.id}">Approve</button>` : '—'}</td></tr>`).join('')}</table></div>`;
+  el.querySelectorAll('[data-app]').forEach(b => b.onclick = () => {
+    DB.applications[b.dataset.app].status = 'Approved';
+    toast('Application approved.');
+    route('applications');
+  });
+};
+VIEWS["Admin (HOD/Dean)"].assign = (el) => {
+  el.innerHTML = `<h2>Assign Course & Hours</h2>
+    <div class="card"><form id="assignForm">
+      <div class="form-grid">
+        <div><label>Lecturer</label><select id="asgLect">${Object.values(DB.lecturers).map(l => `<option value="${l.id}">${l.name} (${l.rank})</option>`).join('')}</select></div>
+        <div><label>Course / Module</label><input id="asgCourse" placeholder="e.g. Algorithms" required></div>
+        <div><label>Hour band</label><select id="asgHours">${[30,45,60].map(h => `<option value="${h}">${h} hours</option>`).join('')}</select></div>
+      </div>
+      <button class="action-btn" type="submit" style="margin-top:0.5rem;">Approve & Generate Contract</button>
+    </form></div>`;
+  document.getElementById('assignForm').onsubmit = (e) => {
+    e.preventDefault();
+    const lid = document.getElementById('asgLect').value;
+    const course = document.getElementById('asgCourse').value;
+    const hours = +document.getElementById('asgHours').value;
+    const id = 'C' + String(Object.keys(DB.contracts).length + 1).padStart(3, '0');
+    DB.contracts[id] = { id, lecturerId: lid, course, hours, status: 'Pending Signatures', signatures: { lecturer: false, admin: true, management: false } };
+    toast('Contract ' + id + ' generated with QR.');
+    route('contracts');
+  };
+};
+VIEWS["Admin (HOD/Dean)"].contracts = (el) => {
+  el.innerHTML = `<h2>All Contracts</h2>${renderContractTable(Object.values(DB.contracts), true)}`;
+  attachContractActions(el);
+};
+VIEWS["Admin (HOD/Dean)"].claims = (el) => {
+  el.innerHTML = `<h2>Claims Review</h2>${renderClaimTable(Object.values(DB.claims), true)}`;
+  attachClaimActions(el);
+};
+VIEWS["Admin (HOD/Dean)"].lecturers = (el) => {
+  const list = Object.values(DB.lecturers);
+  el.innerHTML = `<h2>All Lecturers (${list.length})</h2>
+    <input style="max-width:300px;margin-bottom:0.8rem;" id="lectSearch" placeholder="Search by name or department...">
+    <div id="lectTableWrap"></div>`;
+  const draw = (filter = '') => {
+    const filtered = list.filter(l => l.name.toLowerCase().includes(filter.toLowerCase()) || l.department.toLowerCase().includes(filter.toLowerCase()));
+    document.getElementById('lectTableWrap').innerHTML = `
+      <div class="table-wrap"><table><tr><th>ID</th><th>Name</th><th>Department</th><th>Rank</th><th>Status</th><th>Hours</th></tr>
+      ${filtered.map(l => `<tr><td>${l.id}</td><td>${l.name}</td><td>${l.department}</td><td>${l.rank}</td><td>${statusBadge(effectiveStatus(l))}</td><td>${l.hoursCompleted}${l.annualCap ? '/'+l.annualCap : ''}</td></tr>`).join('')}</table></div>`;
+  };
+  draw();
+  document.getElementById('lectSearch').oninput = (e) => draw(e.target.value);
+};
+
+// ---- Secondary ----
+VIEWS["Secondary User"].dashboard = (el) => {
+  el.innerHTML = `<h2>Overview (View‑Only)</h2>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="number">${Object.keys(DB.contracts).length}</div><div class="label">Contracts</div></div>
+      <div class="stat-card"><div class="number">${Object.keys(DB.claims).length}</div><div class="label">Claims</div></div>
+    </div>
+    <p class="muted">Secondary users (Linda, Patrick) have read access + designated secondary tasks (scope TBC).</p>`;
+};
+VIEWS["Secondary User"].contracts = (el) => {
+  el.innerHTML = `<h2>Contracts (View Only)</h2>${renderContractTable(Object.values(DB.contracts), false)}`;
+};
+VIEWS["Secondary User"].claims = (el) => {
+  el.innerHTML = `<h2>Claims (View Only)</h2>${renderClaimTable(Object.values(DB.claims), false)}`;
+};
+
+// ---- Management ----
+VIEWS["Management"].dashboard = (el) => {
+  const pendingC = Object.values(DB.contracts).filter(c => !c.signatures.management).length;
+  const pendingCl = Object.values(DB.claims).filter(c => !c.signatures.management).length;
+  el.innerHTML = `<h2>Management Overview</h2>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="number">${pendingC}</div><div class="label">Contracts awaiting signature</div></div>
+      <div class="stat-card"><div class="number">${pendingCl}</div><div class="label">Claims awaiting sign‑off</div></div>
+    </div>`;
+};
+VIEWS["Management"].contracts = (el) => {
+  el.innerHTML = `<h2>Sign Contracts</h2>${renderContractTable(Object.values(DB.contracts), true)}`;
+  attachContractActions(el);
+};
+VIEWS["Management"].claims = (el) => {
+  el.innerHTML = `<h2>Sign Claims</h2>${renderClaimTable(Object.values(DB.claims), true)}`;
+  attachClaimActions(el);
+};
+
+/* ---------------------------------------------------------------
+   ACTION BINDERS
+---------------------------------------------------------------- */
+function attachContractActions(el) {
+  el.querySelectorAll('[data-sign-contract]').forEach(b => b.onclick = () => {
+    const c = DB.contracts[b.dataset.signContract];
+    if (!c) return;
+    if (session.role === 'Lecturer') c.signatures.lecturer = true;
+    else if (session.role === 'Admin (HOD/Dean)') c.signatures.admin = true;
+    else if (session.role === 'Management') c.signatures.management = true;
+    if (c.signatures.lecturer && c.signatures.admin && c.signatures.management) c.status = 'Fully Executed';
+    toast('Signature recorded for ' + c.id);
+    route('contracts');
+  });
+}
+function attachClaimActions(el) {
+  el.querySelectorAll('[data-sign-claim]').forEach(b => b.onclick = () => {
+    const c = DB.claims[b.dataset.signClaim];
+    if (!c) return;
+    if (session.role === 'Admin (HOD/Dean)') c.signatures.admin = true;
+    else if (session.role === 'Management') c.signatures.management = true;
+    if (c.signatures.admin && c.signatures.management) c.status = 'Paid';
+    else c.status = 'Awaiting Sign-off';
+    toast('Signature recorded for ' + c.id);
+    route('claims');
+  });
+}
+
+/* ---------------------------------------------------------------
+   NAVIGATION & ROUTING
+---------------------------------------------------------------- */
+const NAV_ITEMS = {
+  "Lecturer": [["dashboard", "Dashboard"], ["apply", "New Application"], ["contracts", "My Contracts"], ["attendance", "My Hours"], ["claims", "Payment Claims"]],
+  "Admin (HOD/Dean)": [["dashboard", "Overview"], ["applications", "Applications"], ["assign", "Assign Course"], ["contracts", "Contracts"], ["claims", "Claims Review"], ["lecturers", "All Lecturers"]],
+  "Secondary User": [["dashboard", "Overview"], ["contracts", "View Contracts"], ["claims", "View Claims"]],
+  "Management": [["dashboard", "Overview"], ["contracts", "Sign Contracts"], ["claims", "Sign Claims"]]
+};
+
+let currentView = 'dashboard';
+
+function route(view) {
+  currentView = view;
+  // sidebar
+  const nav = document.getElementById('sidebarNav');
+  nav.innerHTML = '';
+  NAV_ITEMS[session.role].forEach(([key, label]) => {
+    const btn = document.createElement('button');
+    btn.innerHTML = `<i class="fas fa-${key === 'dashboard' ? 'th-large' : key === 'apply' ? 'file-alt' : key === 'contracts' ? 'file-signature' : key === 'claims' ? 'coins' : key === 'attendance' ? 'clock' : key === 'applications' ? 'inbox' : key === 'assign' ? 'user-plus' : key === 'lecturers' ? 'users' : 'folder'}"></i> ${label}`;
+    if (key === view) btn.classList.add('active');
+    btn.onclick = () => route(key);
+    nav.appendChild(btn);
+  });
+
+  // main content
+  const main = document.getElementById('mainContent');
+  main.innerHTML = '';
+  const renderer = VIEWS[session.role]?.[view] || VIEWS[session.role]?.dashboard;
+  if (renderer) renderer(main);
+  else main.innerHTML = '<p>View not available.</p>';
+}
+
+/* ---------------------------------------------------------------
+   ROLE / USER SELECTORS
+---------------------------------------------------------------- */
+function populateUserSelect() {
+  const sel = document.getElementById('userSelect');
+  sel.innerHTML = '';
+  if (session.role === 'Lecturer') {
+    Object.values(DB.lecturers).forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l.id;
+      opt.textContent = l.name + ' (' + l.id + ')';
+      sel.appendChild(opt);
+    });
+    sel.value = session.userId || 'L001';
+  } else {
+    const names = {
+      "Admin (HOD/Dean)": ["Dr. HOD - Kayonde", "Dean - Mutabazi"],
+      "Secondary User": ["Linda", "Patrick"],
+      "Management": ["VC Office - Sign 1", "Bursar - Sign 2"]
+    };
+    (names[session.role] || []).forEach(n => {
+      const opt = document.createElement('option');
+      opt.value = n;
+      opt.textContent = n;
+      sel.appendChild(opt);
+    });
+  }
+  document.getElementById('userNameDisplay').textContent = session.role;
+}
+
+const roleSelect = document.getElementById('roleSelect');
+ROLES.forEach(r => {
+  const opt = document.createElement('option');
+  opt.value = r;
+  opt.textContent = r;
+  roleSelect.appendChild(opt);
+});
+roleSelect.value = session.role;
+roleSelect.onchange = () => {
+  session.role = roleSelect.value;
+  session.userId = session.role === 'Lecturer' ? 'L001' : null;
+  populateUserSelect();
+  route('dashboard');
+};
+document.getElementById('userSelect').onchange = () => {
+  session.userId = document.getElementById('userSelect').value;
+  route(currentView);
+};
+populateUserSelect();
+
+/* ---------------------------------------------------------------
+   INIT
+---------------------------------------------------------------- */
+route('dashboard');
+</script>
+</body>
+</html>
